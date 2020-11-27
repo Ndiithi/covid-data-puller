@@ -4,8 +4,10 @@ import csv
 import requests
 import logging
 
-f = open('/home/fintan/covid_data/covid_formated2.csv', 'w')
-r = requests.get('https://services7.arcgis.com/1Cyg6S9yGgIqdFPO/arcgis/rest/services/Covid_Kenya__Cases_Updated/FeatureServer/0/query?f=json&where=(cumulative_recovered_cases%3E0%20OR%20cumulative_death_cases%3E0)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true')
+# f = open('/home/fintan/covid_data/covid_formated2.csv', 'w')
+f = open('/home/duncanndiithi/PycharmProjects/covid/covid_formated2.csv', 'w')
+coutry_req = requests.get('https://services7.arcgis.com/1Cyg6S9yGgIqdFPO/arcgis/rest/services/Covid_Kenya__Cases_Updated/FeatureServer/0/query?f=json&where=(cumulative_recovered_cases%3E0%20OR%20cumulative_death_cases%3E0)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true')
+
 
 log = logging.getLogger("covid data reader")
 logging.basicConfig(filename='covid_fetcher.log',format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',level=logging.DEBUG)
@@ -13,8 +15,8 @@ logging.basicConfig(filename='covid_fetcher.log',format='%(asctime)s,%(msecs)d %
 with f:
     writer = csv.writer(f)
 
-    if r.status_code == 200:
-        data = r.json()
+    if coutry_req.status_code == 200:
+        data = coutry_req.json()
         log.info("fetched data")
         date_county={}
         date_cummulative = {}
@@ -74,7 +76,7 @@ with f:
 
                 else:
                     date_county[key]=_meta['attributes']
-                print date_cummulative
+                # print date_cummulative
                 cum_key = "'%s'" % (dt_object)
                 date_county[key]['cumulative_confirmed_cases'] = date_cummulative[cum_key]['cumulative_confirmed_cases']
                 date_county[key]['cumulative_death_cases'] = date_cummulative[cum_key]['cumulative_death_cases']
@@ -93,9 +95,3 @@ with f:
 
     else:
         log.error("failed to fetched covid data")
-
-
-
-
-
-
