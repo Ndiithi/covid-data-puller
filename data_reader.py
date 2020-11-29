@@ -3,10 +3,13 @@ import csv
 import requests
 import logging
 
-country_data_file = open('/home/duncanndiithi/PycharmProjects/covid/country_data_file.csv', 'w')
-country_req = requests.get('https://services7.arcgis.com/1Cyg6S9yGgIqdFPO/arcgis/rest/services/Covid_Kenya__Cases_Updated/FeatureServer/0/query?f=json&where=(cumulative_recovered_cases%3E0%20OR%20cumulative_death_cases%3E0)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true')
+country_data_file = open('/home/fintan/covid_data/country_data_file.csv', 'w')
+# country_data_file = open('/home/duncanndiithi/PycharmProjects/covid/country_data_file.csv', 'w')
+# country_req = requests.get('https://services7.arcgis.com/1Cyg6S9yGgIqdFPO/arcgis/rest/services/Covid_Kenya__Cases_Updated/FeatureServer/0/query?f=json&where=(cumulative_recovered_cases%3E0%20OR%20cumulative_death_cases%3E0)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true')
+country_req = requests.get('https://services8.arcgis.com/I6vAw1FtOBh556rT/arcgis/rest/services/Corona_Cases_Kenya/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Date+asc&outSR=102100&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true')
 
-county_data_file = open('/home/duncanndiithi/PycharmProjects/covid/county_data_file.csv', 'w')
+county_data_file = open('/home/fintan/covid_data/county_data_file.csv', 'w')
+# county_data_file = open('/home/duncanndiithi/PycharmProjects/covid/county_data_file.csv', 'w')
 county_req = requests.get('https://services8.arcgis.com/I6vAw1FtOBh556rT/arcgis/rest/services/COVID_Cases/FeatureServer/0/query?f=json&where=Confirmed+%3E+0&returnGeometry=false&spatialRel=esriSpatialRelIntersects&objectIds=&outFields=*&outSR=102100&cacheHint=true')
 
 log = logging.getLogger("covid data reader")
@@ -14,18 +17,52 @@ logging.basicConfig(filename='covid_fetcher.log',format='%(asctime)s,%(msecs)d %
 
 
 def extract_country_covid_data(data):
-    country_data = {}
+    # country_data = {}
+    _data_ref ={}
     for _meta in data['features']:
-        timestamp = _meta['attributes']['date']
+        timestamp = _meta['attributes']['Date']
+        country_data = {
+            "date": None,
+            "county": None,
+            "long": None,
+            "lat": None,
+            "nationality": 'KENYAN',
+            "day": 0,
+            "confirmed_cases": None,
+            "death_cases": None,
+            "recovered_cases": None,
+            "cumulative_confirmed_cases": None,
+            "cumulative_death_cases": None,
+            "cumulative_recovered_cases": None,
+            "active_cases": None,
+            "ObjectId": None
+        }
         try:
 
             dt_object = datetime.fromtimestamp(timestamp / 1000).strftime('%Y-%m-%d')
-            _meta['attributes']['date'] = dt_object
-            cum_key = "'%s:%s'" % (_meta['attributes']['date'], _meta['attributes']['county'])
-            country_data[cum_key] = _meta['attributes']
+            _meta['attributes']['Date'] = dt_object
+            cum_key = "'%s:%s'" % (_meta['attributes']['Date'],"KENYA")
+
+            country_data['date'] = dt_object
+            country_data['county'] = "KENYA"
+            country_data['long'] = 33.3918952
+            country_data['lat'] = 0.1540805
+            # country_data['nationality'] = _meta['attributes']['Confirmed']
+            # country_data['day'] = _meta['attributes']['County_Name']
+            country_data['confirmed_cases'] = _meta['attributes']['Confirmed_New']
+            country_data['death_cases'] = _meta['attributes']['Deaths_New']
+            country_data['recovered_cases'] = _meta['attributes']['Recovered_New']
+            country_data['cumulative_confirmed_cases'] = _meta['attributes']['Confirmed_Total']
+            country_data['cumulative_death_cases'] = _meta['attributes']['Deaths_Total']
+            country_data['cumulative_recovered_cases'] = _meta['attributes']['Recovered_Total']
+            country_data['active_cases'] = _meta['attributes']['Active_Total']
+            country_data['ObjectId'] = 5
+
+            _data_ref[cum_key] = country_data
+            # country_data[cum_key] = _meta['attributes']
         except Exception as e:
             log.info(e)
-    return country_data
+    return _data_ref
 
 
 def extract_county_covid_data(data):
